@@ -2,6 +2,7 @@ import "./warehouseInward.scss";
 import {
   Badge,
   Button,
+  ComboboxItem,
   Grid,
   Input,
   Select,
@@ -28,27 +29,111 @@ import {
 import { DatePickerInput } from "@mantine/dates";
 import { paginationBase } from "../utils/pagination";
 import { convernDate } from "../utils/converntDate";
+import { ISelectItem } from "./TblSelectItem";
 
 export const WarehouseInward = () => {
   const [data, setData] = useState<TblOutwardGetList[]>([]);
   const [pagination, setPagination] = useState(paginationBase);
   const [search, setSearch] = useState<ITblOutwardSearchInput>({
     key: "",
+    source: "",
+    empId: "",
+    branch: "",
+    fromTransationDate: "",
+    toTransationDate: "",
   });
   const headerRef = useRef<HTMLDivElement>(null);
   const [height, setHeight] = useState<number>(0);
   const [rowCount, setRowCount] = useState<number>(0);
+  const [dataInventoryTransactionType, setDataInventoryTransactionType] =
+    useState<ComboboxItem[]>([]);
+  const [dataBranch, setDataBranch] = useState<ComboboxItem[]>([]);
+  const [dataEmployee, setDataEmployee] = useState<ComboboxItem[]>([]);
+
+  const handleSearchOnChange = (value: string, key: string) => {
+    setSearch((prevState) => ({ ...prevState, [key]: value }));
+  };
+  const fetchDataInventoryTransactionType = async () => {
+    try {
+      const response = await axios.get(
+        "/v1/TblInventoryTransactionType/get-select"
+      );
+      const result = response.data;
+      if (result.success && result.data) {
+        setDataInventoryTransactionType(
+          result.data.map((type: ISelectItem) => ({
+            value: type.value,
+            label: type.text,
+          }))
+        );
+      } else setDataInventoryTransactionType([]);
+    } catch (error) {
+      console.log(error);
+      setDataInventoryTransactionType([]);
+    }
+  };
+  const fetchDataBranch = async () => {
+    try {
+      const response = await axios.get("/v1/TblDmInventory/get-select-branch");
+      const result = response.data;
+      if (result.success && result.data) {
+        setDataBranch(
+          result.data.map((type: ISelectItem) => ({
+            value: type.value,
+            label: type.text,
+          }))
+        );
+      } else setDataBranch([]);
+    } catch (error) {
+      console.log(error);
+      setDataBranch([]);
+    }
+  };
+  const fetchDataEmployee = async () => {
+    try {
+      const response = await axios.get("/v1/TblDmEmployee/get-select");
+      const result = response.data;
+      if (result.success && result.data) {
+        setDataEmployee(
+          result.data.map((type: ISelectItem) => ({
+            value: type.value,
+            label: type.text,
+          }))
+        );
+      } else setDataEmployee([]);
+    } catch (error) {
+      console.log(error);
+      setDataEmployee([]);
+    }
+  };
+
   const fetchData = async () => {
     let url = `?Skip=${pagination?.pageIndex * pagination?.pageSize}&Take=${
       pagination.pageSize
     }`;
     if (search.key) {
-      url += `&key=${search.key}`;
+      url += `&KeySearch=${search.key}`;
+    }
+    if (search.source) {
+      url += `&SourceTypeCode=${search.source}`;
+    }
+    if (search.empId) {
+      url += `&EmpId=${search.empId}`;
+    }
+    if (search.branch) {
+      url += `&InvId=${search.branch}`;
+    }
+    if (search.fromTransationDate) {
+      url += `&FromTransationDate=${search.fromTransationDate}`;
+    }
+
+    if (search.toTransationDate) {
+      url += `&ToTransationDate=${search.toTransationDate}`;
     }
     try {
       const response = await axios.get("/v1/Inward/get-list" + url);
       const result = response.data;
-      setRowCount(result.data.totalCount);
+      setRowCount(result.totalCount);
       setData(result.data || []);
     } catch (error) {
       console.log(error);
@@ -57,20 +142,36 @@ export const WarehouseInward = () => {
   };
 
   useEffect(() => {
+    const fetchAllData = async () => {
+      try {
+        await Promise.all([
+          fetchDataInventoryTransactionType(),
+          fetchDataBranch(),
+          fetchDataEmployee(),
+        ]);
+      } catch (error) {
+        console.log(error);
+      }
+    };
+
+    fetchAllData();
+
     const headerHeight = headerRef.current?.offsetHeight || 0;
 
     const handleResize = () => {
-      console.log(window.innerHeight);
       setHeight(window.innerHeight - (150 + headerHeight));
-      console.log(height);
     };
     handleResize();
     window.addEventListener("resize", handleResize);
     return () => {
       window.removeEventListener("resize", handleResize);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    console.log("rerender");
+  });
+
   useEffect(() => {
     fetchData();
 
@@ -199,7 +300,9 @@ export const WarehouseInward = () => {
               placeholder="Từ khoá"
               type="text"
               leftSection={<IconSearch color="#15aabf" />}
-              onChange={(e) => setSearch({ ...search, key: e.target.value })}
+              onChange={(e) => {
+                handleSearchOnChange(e.target.value, "key");
+              }}
             />
           </Grid.Col>
           <Grid.Col span={{ base: 6, sm: 4, md: 2, lg: 1.25 }}>
@@ -220,6 +323,7 @@ export const WarehouseInward = () => {
           <Grid.Col span={{ base: 6, sm: 4, md: 2, lg: 1.25 }}>
             <Select
               placeholder={"Loại chứng từ gốc"}
+              name={""}
               searchable
               clearable
               leftSection={<IconFileTypography color="#15aabf" />}
@@ -227,7 +331,10 @@ export const WarehouseInward = () => {
                 transitionProps: { transition: "pop", duration: 200 },
               }}
               nothingFoundMessage={"Không có dữ liệu"}
-              onChange={() => {}}
+              data={dataInventoryTransactionType}
+              onChange={(value) => {
+                handleSearchOnChange(value || "", "source");
+              }}
             />
           </Grid.Col>
 
@@ -240,8 +347,11 @@ export const WarehouseInward = () => {
                 transitionProps: { transition: "pop", duration: 200 },
               }}
               leftSection={<IconBrandBootstrap color="#15aabf" />}
+              data={dataBranch}
               nothingFoundMessage={"Không có dữ liệu"}
-              onChange={() => {}}
+              onChange={(value) => {
+                handleSearchOnChange(value || "", "branch");
+              }}
             />
           </Grid.Col>
 
@@ -254,8 +364,11 @@ export const WarehouseInward = () => {
               comboboxProps={{
                 transitionProps: { transition: "pop", duration: 200 },
               }}
+              data={dataEmployee}
               nothingFoundMessage={"Không có dữ liệu"}
-              onChange={() => {}}
+              onChange={(value) => {
+                handleSearchOnChange(value || "", "empId");
+              }}
             />
           </Grid.Col>
 
@@ -270,7 +383,17 @@ export const WarehouseInward = () => {
               locale="vi"
               // value={value}
               valueFormat="DD/MM/YYYY"
-              onChange={() => {}}
+              onChange={(e) => {
+                handleSearchOnChange(
+                  e[0] ? e[0].toISOString() : "",
+                  "fromTransationDate"
+                );
+
+                handleSearchOnChange(
+                  e[1] ? e[1].toISOString() : "",
+                  "toTransationDate"
+                );
+              }}
               clearable
             />
           </Grid.Col>

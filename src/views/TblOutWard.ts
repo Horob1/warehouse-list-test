@@ -20,4 +20,9 @@ export interface TblOutwardGetList {
 
 export interface ITblOutwardSearchInput {
   key: string;
+  source: string;
+  branch: string;
+  empId: string;
+  fromTransationDate: string;
+  toTransationDate: string;
 }
