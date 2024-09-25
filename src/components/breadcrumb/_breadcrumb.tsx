@@ -1,16 +1,27 @@
 import { Anchor, Breadcrumbs } from "@mantine/core";
+import { useLocation } from "react-router-dom";
 
 const BreadcrumbLayout = () => {
-  const items = [
-    { title: "Trang chủ", href: "#" },
-    { title: "Cấu hình kho hàng", href: "#" },
-    { title: "Phiếu nhập kho", href: "#" },
-  ].map((item, index) => (
-    <Anchor href={item.href} key={index}>
-      {item.title}
-    </Anchor>
-  ));
-  return <Breadcrumbs className="breadcrumb">{items}</Breadcrumbs>;
+  const location = useLocation();
+
+  const items = location.pathname.split("/");
+
+  items[0] = "home";
+
+  return (
+    <Breadcrumbs
+      style={{
+        padding: "16px",
+      }}
+      className="breadcrumb"
+    >
+      {items.map((item, index) => (
+        <Anchor href={item === "home" ? "/" : `/${item}`} key={index}>
+          {item}
+        </Anchor>
+      ))}
+    </Breadcrumbs>
+  );
 };
 
 export default BreadcrumbLayout;

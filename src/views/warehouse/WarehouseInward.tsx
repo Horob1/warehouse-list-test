@@ -9,7 +9,7 @@ import {
   Text,
   // Tooltip,
 } from "@mantine/core";
-import BreadcrumbLayout from "../components/breadcrumb/_breadcrumb";
+import BreadcrumbLayout from "../../components/breadcrumb/_breadcrumb";
 import {
   IconBrandBootstrap,
   IconFileTypography,
@@ -20,16 +20,16 @@ import {
 } from "@tabler/icons-react";
 import { ITblOutwardSearchInput, TblOutwardGetList } from "./TblOutWard";
 import React, { useEffect, useRef, useState } from "react";
-import axios from "./../api/axios";
+import axios from "../../api/axios_pos";
 import {
   MantineReactTable,
   MRT_ColumnDef,
   useMantineReactTable,
 } from "mantine-react-table";
 import { DatePickerInput } from "@mantine/dates";
-import { paginationBase } from "../utils/pagination";
-import { convernDate } from "../utils/converntDate";
-import { ISelectItem } from "./TblSelectItem";
+import { paginationBase } from "../../utils/pagination";
+import { convernDate } from "../../utils/converntDate";
+import { ISelectItem } from "./../warehouse/TblSelectItem";
 
 export const WarehouseInward = () => {
   const [data, setData] = useState<TblOutwardGetList[]>([]);
