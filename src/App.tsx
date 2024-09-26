@@ -3,9 +3,9 @@ import { WarehouseInward } from "./views/warehouse/WarehouseInward";
 import "@mantine/core/styles.css"; //import Mantine V7 styles needed by MRT
 import "@mantine/dates/styles.css"; //if using mantine date picker features
 import "mantine-react-table/styles.css"; //import MRT styles
-
 import { createBrowserRouter, Link, RouterProvider } from "react-router-dom";
 import { SaleChanel } from "./views/salechannel/SaleChannel";
+import { ModalsProvider } from "@mantine/modals";
 const router = createBrowserRouter([
   {
     path: "/",
@@ -18,6 +18,7 @@ const router = createBrowserRouter([
       >
         <Link to={"/warehouse"}>warehouse</Link>
         <Link to={"/salechanel"}>salechanel</Link>
+        
       </div>
     ),
   },
@@ -33,7 +34,9 @@ const router = createBrowserRouter([
 function App() {
   return (
     <MantineProvider>
-      <RouterProvider router={router}></RouterProvider>
+      <ModalsProvider>
+        <RouterProvider router={router}></RouterProvider>
+      </ModalsProvider>
     </MantineProvider>
   );
 }
